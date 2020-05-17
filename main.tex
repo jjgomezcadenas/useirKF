@@ -1,0 +1,182 @@
+\documentclass[a4paper,oneside,11pt]{article}
+\usepackage{cprform_lett}
+\usepackage{amsmath,amstext,amsfonts,amsbsy,amssymb,amscd,bbm,epsfig}
+\usepackage{lscape,color,multirow,hyperref, url}
+\usepackage{authblk}
+%\usepackage{minted}
+
+\title{\noindent\textsf{\Large Fitting epidemic data using a Kalman filter approach and a non-Markovian SEIR model} }
+\author[1]{J. A. Hernando}
+\affil[1]{Departamento de F\'{\i}sica Te\'orica and Instituto de F\'{\i}sica Te\'orica UAM-CSIC,
+Universidad Aut\'onoma de Madrid, E-28049 Madrid, Spain}
+\author[2]{P. Hern\'andez}
+\affil[2]{Departamento de F\'{\i}sica Te\'orica e Instituto de F\'{\i}sica Corpuscular CSIC-UVEG, Universidad de Valencia  
+ E-46071 Valencia, Spain}
+\author[3]{J.J. G\'omez-Cadenas}
+\affil[3]{Donostia International Physics Center (DIPC), Manuel Lardizabal Ibilbidea 4, 20018 San Sebasti\'an / Donostia, Spain}
+
+\renewcommand\Authands{ and }
+
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TITLE
+
+%\noindent\textsf{\Large A unitary SEIR model}
+%\vskip 2truemm
+%\thicktablerule
+%\vskip 2truemm
+%\noindent{\large 
+
+%\author[$\dagger$]{P. Hern\'andez}, C. Pena, A. Ramos, J.J. G\'omez-Cadenas
+%\hfill May 2020}
+
+\maketitle
+
+\vskip 10truemm
+
+\begin{abstract}
+We present a technique to fit epidemic data based in uSeir, a generalised, non-Markovian formulation 
+of the SEIR concept. Our fitting approach uses a Kalman filter algorithm that allow us to describe the full trajectory of the $R_0$ parameter and MoMo data (a public data base in Spain monitoring daily death rate) as a proxy of the infection rate. We demonstrate the robustness of our approach using simulated data and then fit the data for the Spanish CCAA (autonomic regions) as well as for several major Spanish cities. We obtain the evolution curves of $R_0$ showing the current state of the Pandemics in the CCAA. 
+
+\end{abstract}
+\section{Introduction}
+
+The SEIR (susceptible - infected - recovered/removed) formulation of the dynamics of an infection characterised by incubation ($t_i$) and recovered/removal ($t_r$) times \cite{Tang2020, Lin2020, Lopez2020} has been extensively used to fit the data describing the present COVID-19 pandemic, as well as many other past epidemics \cite{Tang2020, Lin2020, Lopez2020}. Yet, the SEIR formulation silently assumes exponential distributions for $t_i, t_r$, and such assumption is not supported by the data \cite{Zhang2020, 10.1371/journal.pmed.0020174}. In particular, in the case of COVID-19, 
+gamma distributions appear more realistic (see for example \cite{Hellewell2020}). 
+
+A generalised, non-Markovian (e.g., not assuming exponential distributions) formulation, called unitary SEIR or uSEIR for short, has been recently presented [PILO]. The predictions of uSEIR using gamma functions for the characteristic times are substantially different from those of classical SEIR and should describe more accurately the data. 
+
+In this paper we use the uSEIR model to describe the evolution of the COVID-19 pandemic in Spain. We use the public MoMo data base  \footnote{\url{https://www.isciii.es/QueHacemos/Servicios/VigilanciaSaludPublicaRENAVE/EnfermedadesTransmisibles/MoMo/Paginas/MoMo.aspx}}, which records the daily deaths in Spain, classified according to a large set of parameters. We show in this paper that an excellent proxy of the infection curve can be obtained from MoMo data. Our fitting technique uses the elegant Kalman filter algorithm \cite{Billoir1984, Fruhwirth1987, CerveraVillanueva2002, } to describe the ``trajectory'' of the $R_0$ parameter in different autonomic regions (CCAA) and major cities in Spain.  We study the robustness of the fits and their dependence with the assumptions concerning the characteristic times of the infection. 
+
+This paper is organised as follows. Section \ref{sec:useir} reviews the uSEIR model and shows its solutions for different choices of $t_i, t_r$ distributions. We consider the cases of an unquenched and a quenched epidemics. In particular, we estimate the deaths avoided in Spain by the application of the confinement measures in the country starting March 13. In section \ref{sec:KF} we describe the Kalman filter algorithm and use simulated data generated with the uSEIR model to illustrate its capability to fit the infection curve providing a robust estimation of the evolution of the basic reproduction number $R_0$. In section \ref{sec:momo} we describe the MoMo data used for this work. Our main results are presented in section \ref{sec:fits} where we show fits to the Spanish CCAA and selected major cities. Finally, in section \ref{sec:conclu} we summarise our results.
+ 
+
+\section{uSEIR formulation}
+\label{sec:useir}
+Assuming the number of agents is sufficiently large and homegenous, it is to be expected that the dynamics of the microscopic system can be well described by a set of differential equations for the global variables $S(t), E(t), I(t), R(t)$ \cite{Kermack1927}. 
+
+We first want to derive a set of equations that should describe the dynamics of these variables in the assumption that the incubation and removal times are fixed. The relation between the changes on this variables is essentially fixed by unitarity. On the one hand, each individual must be in one of the S, E, I or R categories. Therefore the number of  individuals in the population, $N$, is a constant:
+\begin{eqnarray}
+S(t)+ E(t)+I(t)+R(t) = N.
+\end{eqnarray}
+Secondly, there must also be a relation between the rates at which these different individuals move from one category to the next. An infectious process is that in which an infected individual gets in contact with a susceptible one. Let us call $r_{S\rightarrow E}$ the rate of infection per unit time
+per infected individual and per susceptible individual. The number of susceptible individuals gets reduced by those that become exposed between $[t, t+dt]$, that is\footnote{Note that in the particle physics language, this equation is equivalent to the rate of collisions in collision experiment where of a flux of infectious agents collide with a target of susceptible agents. The rate would correspond to a cross-section times velocity of the incoming particles.}:
+\begin{eqnarray}
+d S(t) = - r_{S\rightarrow E} I(t) S(t) dt.
+\label{eq:basic}
+\end{eqnarray}
+This is the basic equation that assumes that an average description of the microscopic process is possible. 
+In the simplest approximation, if the incubation and recovery time of all individuals have the same values, we must also have that the individuals that become exposed at time
+$t$ are those that move from category $S\rightarrow E$  minus those that move from $E\rightarrow I$. But the latter must be the ones that entered the exposed category in time $t-t_i$. Therefore we have:
+\begin{eqnarray}
+d E(t) &=& -d S(t) + d S(t-t_i) \theta(t-t_i) ,\nonumber\\
+d I(t) &=& -d S(t-t_i) \theta(t-t_i)+ d S(t-t_i-t_r) \theta(t-t_i-t_r),\nonumber\\
+d R(t) &=& - d S(t - t_i - t_r) \theta(t-t_i-t_r).\nonumber
+\label{eqs:cor}
+\end{eqnarray}
+
+The initial conditions to these equations start with a fixed $N$ and a number of infected individuals at time $t=0$, $I(0)= I_0$, so that $S(0)=S_0 = N-I_0$, while $E(0)=0$ and $R(0)=0$.
+In the  equations above, the number of initially infected individuals does not recover, but we can easily force this with the substitution in eq.~(\ref{eq:basic}):
+\begin{eqnarray}
+I(t) \rightarrow \tilde{I}(t) \equiv I(t) - I(0) \theta(t-t_r).
+\end{eqnarray}
+
+These equations depend only on three variables, namely $r_{S\rightarrow E}$, $t_i$ and $t_r$, which in principle are the same parameters appearing in the classical SEIR models. In terms of the 
+basic reproduction number, $R_0$,  corresponds to the combination:
+\begin{eqnarray}
+r_{S\rightarrow E} = {R_0\over N t_r}.
+\end{eqnarray}
+
+Since $R_0$ is clearly proportional to $t_r$ , it follows that $r_{S\rightarrow E}$ is not. In a microscopic description of the infected process as in the ABM simulations, the rate is related to the microscopic parameters via $R_0$ from eqs.~(\ref{eq:r0cptr}), (\ref{eq:r0aa}) or (\ref{eq:r0jj}) for the different ABMs.
+
+  We can compare the uSEIR and classical SEIR solutions to the ABMs simulations, matching the basic microscopic parameters. 
+In Fig.~\ref{fig:fixed} we show the curve for the fraction of infected individuals as a function of time measured from 10 independent turtle simulations in a population of $10^4$ agents with a fraction of infectious agents of $10^{-3}$ at $t=0$, and assuming fixed parameters $t_i$, $t_r$ and $r_{S\rightarrow E}$ for all the agents. The uSEIR solution agrees very well with the simulations, while the classical SEIR predicts a wider and less pronounced peak.
+
+\begin{figure}[h!]
+  \centering
+ %s \includegraphics[width=10cm]{fixedraw.pdf}
+  \caption{ Curve of the infected individuals as a function of time for the uSEIR (solid-black), classical SEIR (dashed-red) and 10 agent simulations (cyan) in a  population of $N=10^4$ and $I(0)=10$ with $R_0=3.5$, $t_i=5.5$ and $t_r=6.5$. Time units are days. The values of $R_0, t_i$ and $t_r$ are in the typical range of those used to describe the
+  current COVID-19 pandemic. }
+  \label{fig:fixed}
+   \end{figure}
+
+  This is not surprising since classical SEIR is known to be valid when  $t_i$ and $t_r$ are Markovian, that is  exponentially distributed. In most realistic cases, not all individuals have the same incubation or removal times, and certainly not all individuals have the same number of contacts and probability of infection per contact. In the following, we consider the effect of these different non-uniformities.
+
+\section{Non-uniform $t_i$ and $t_r$ }
+\label{sec:titr}
+
+ Non-uniformities can be incorporated in the uSEIR equations by considering different categories of individuals. For example, the population divides   into those with different incubation periods, $t_i^{(i)}$, so we have $S_i(t)$ as the susceptible individuals in the $i$-th category of incubation time. Each category follows its usual progression $S_i\rightarrow E_i \rightarrow I_i \rightarrow R_i$, but the important point to notice is that a given susceptible individual in category $i$ becomes an exposed individual in the same category $i$, but can get infected from any infectious individual in any category, $j$. If we assume that the capability to infect per unit time is independent on the category, the number of susceptible individuals in category $i$ changes as they become exposed according to:
+\begin{eqnarray}
+d S_i(t) = - r_{S\rightarrow E} \tilde{I}(t) S_i(t) dt.
+\end{eqnarray}
+while eqs.~(\ref{eqs:cor}) will still be valid for the exposed, infected and recovered in each category $i$, taking the incubation period as that corresponding to this category, $t^{(i)}$.
+
+Summing over all the categories, the first equation leads to:
+\begin{eqnarray}
+d S(t) = - r_{S\rightarrow E} \tilde{I}(t) S(t) dt,
+\end{eqnarray}
+while in the others we get
+\begin{eqnarray}
+d E(t) &=& -d S(t) + \sum_i d S(t-t^{(i)}_i) \theta(t-t^{(i)}_i) ,\nonumber\\
+d I(t) &=& \sum_i  \left\{-d S(t-t^{(i)}_i) \theta(t-t^{(i)}_i)+ d S(t-t^{(i)}_i-t_r) \theta(t-t^{(i)}_i-t_r)\right\},\nonumber\\
+d R(t) &=& \sum_i \left\{- d S(t - t^{(i)}_i - t_r) \theta(t-t^{(i)}_i-t_r)\right\}.
+\label{eqs:corint}
+\end{eqnarray}
+Obviously in the limit of $t_i^{(i)}$ varying continuously the sum becomes an integral
+\begin{eqnarray}
+\sum_i  (...) \rightarrow \int dt_i P(t_i) (...), \;\;\; \int_0^\infty dt_i P(t_i) = 1.
+\end{eqnarray}
+We can similarly assume subcategories for varying $t_r$ and the modification would be analogous, resulting in the following integro-differential equations:
+\begin{eqnarray}
+d S(t) &=& - r_{S\rightarrow E} \tilde{I}(t) S(t) dt,\nonumber\\
+d E(t) &=& -d S(t) + \int_0^{t} dt_i ~d S(t-t_i) P(t_i) ,\nonumber\\
+d I(t) &=& -\int_0^{t} dt_i  ~d S(t-t_i) P(t_i) + \int_0^{t} d t_i \int_0^{t-t_i} dt_r~ dS(t-t_i-t_r) P(t_i) P'(t_r),\nonumber\\
+d R(t) &=& -\int_0^{t} d t_i \int_0^{t-t_i} dt_r~ dS(t-t_i-t_r) P(t_i) P'(t_r),
+\label{eqs:useirint}
+\end{eqnarray}
+where $P(t_i)$ and $P'(t_r)$ are the probability distributions of the incubation and removal times in the population. We refer to eqs.~(\ref{eqs:useirint}) and (\ref{eqs:cor}) indistinctively as uSEIR.
+
+Solving numerically these equations it is possible to use the uSEIR model to generate simulated data and to fit real data. 
+
+
+\begin{figure}[h!]
+  \centering
+  %\includegraphics[width=10cm]{exp.pdf}
+  \caption{ uSeir for exponencial, gamma and poisson, with $R_0=3.5$, $\langle t_i\rangle=5.5$ and $\langle t_r\rangle=6.5$.  }
+  \label{fig:exp}
+   \end{figure}
+   
+ \section{Kalman Filter }
+\label{sec:KF}
+ Kalman Filter
+ 
+  \section{Momo data }
+\label{sec:momo}
+MoMO
+ 
+  \section{Fits}
+\label{sec:fits}
+ Fits
+
+\section{Conclusions}
+\label{sec:conclu}
+
+Conclu
+
+\section*{Appendix A: More fits?}
+\label{sec:appendix}
+
+Appendix
+
+Our software can be found in  \url{https://github.com/jjgomezcadenas/useirn}. 
+
+
+
+
+
+
+\bibliographystyle{unsrt}
+\bibliography{refs}
+\end{document}

@@ -1,0 +1,113 @@
+%%%%%%%%%%%%%%%%%%%
+% LaTeX formatting
+
+
+% Page layout (to be used in oneside mode)
+
+\textheight=20 true cm
+\textwidth=14 true cm
+%\textwidth=15.4 true cm
+\hoffset= -0.7 true cm
+\voffset= 0.0 true cm
+\parindent=2em
+
+% Custom font sizes
+
+\font\ninerm=cmr9
+\font\ninebf=cmbx9
+\font\nineit=cmti9
+
+\font\tenrm=cmr10
+\font\tenbf=cmbx10
+\font\tenit=cmti10
+
+\font\bigrm=cmr10 at 12 true pt
+\font\bigbf=cmbx10 at 12 true pt
+\font\bigit=cmti10 at 12 true pt
+
+\font\Bigrm=cmr12 at 16 true pt
+\font\Bigbf=cmbx12 at 16 true pt
+\font\Bigit=cmti12 at 16 true pt
+
+
+% Redefine the formats for sectioning headers
+
+\renewcommand{\section}{\setcounter{equation}{0}%
+%  \setcounter{figure}{0}%
+%  \setcounter{table}{0}%
+  \@startsection {section}{1}{\z@}%
+  {-6.0ex \@plus -1ex \@minus -.2ex}%
+  {2.3ex \@plus.2ex}%
+  {\reset@font\normalsize\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+  {-4.5ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\reset@font\normalsize\itshape}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{\z@}%
+  {-4.0ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\reset@font\normalsize\itshape}}
+\renewcommand{\paragraph}{\@startsection{paragraph}{4}{\z@}%
+  {-4.0ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\reset@font\normalsize\itshape}}
+
+\renewcommand\appendix{\par%
+  \renewcommand{\section}{\setcounter{equation}{0}%
+    \@startsection {section}{1}{\z@}%
+    {-6.0ex \@plus -1ex \@minus -.2ex}%
+    {2.3ex \@plus.2ex}%
+    {\reset@font\normalsize\bfseries\noindent\appendixname\space}}%
+  \setcounter{section}{0}%
+  \setcounter{subsection}{0}%
+  \gdef\thesection{\@Alph\c@section}
+  \addcontentsline{toc}{section}{APPENDICES}}
+\newcommand{\appendixend}{
+  \renewcommand{\section}{\setcounter{equation}{0}%
+%    \setcounter{figure}{0}%
+%    \setcounter{table}{0}%
+    \@startsection {section}{1}{\z@}%
+    {-6.0ex \@plus -1ex \@minus -.2ex}%
+    {2.3ex \@plus.2ex}%
+    {\reset@font\large\bfseries}}}
+
+
+% Set counters to the format sec.#
+
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+%\renewcommand{\thetable}{\thesection.\arabic{table}}
+%\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+
+
+% Change to roman numbers in enumerations
+
+\renewcommand{\theenumi}{\roman{enumi}}
+\renewcommand{\labelenumi}{(\theenumi)}
+
+
+% Rules
+
+\def\thicktablerule{\hrule height1pt}
+\def\thintablerule{\hrule height0.4pt}
+
+%
+\newdimen\arrayruleHwidth
+\setlength{\arrayruleHwidth}{0.3ex}
+\makeatletter
+\def\Hline{\noalign{\ifnum0=`}\fi\hrule \@height \arrayruleHwidth
+  \futurelet \@tempa\@xhline}
+\makeatother
+%
+
+% Support for cyrillic stuff (always useful when running
+% out of symbols ...)
+
+\usepackage[OT2,OT1]{fontenc}
+\newcommand\cyr{%
+\renewcommand\rmdefault{wncyr}%
+\renewcommand\sfdefault{wncyss}%
+\renewcommand\encodingdefault{OT2}%
+\normalfont
+\selectfont}
+\DeclareTextFontCommand{\textcyr}{\cyr} 
+
